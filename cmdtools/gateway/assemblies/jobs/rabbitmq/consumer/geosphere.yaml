@@ -1,6 +1,6 @@
 #用于交易结果提交给网关确认
-host: 47.104.128.137
-#host: 172.31.210.92
+#host: 47.104.128.137
+host: 172.31.210.92
 port: 5675
 virtualHost: /flow
 user: superadmin
