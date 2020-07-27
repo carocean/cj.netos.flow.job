@@ -26,11 +26,11 @@ public class PushGeoDocumentMediaCommand extends PushGeoFlowJobBase {
     @Override
     public void command(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws RabbitMQException, RetryCommandException, IOException {
         Map<String, Object> headers = properties.getHeaders();
-        String category = ((LongString) headers.get("category")).toString();
-        String receptor = ((LongString) headers.get("receptor")).toString();
-        String docid = ((LongString) headers.get("docid")).toString();
         String mediacreator = ((LongString) headers.get("creator")).toString();
         Map<String, Object> media = new Gson().fromJson(new String(body), HashMap.class);
+        String category = (String) media.get("category");
+        String receptor = (String) media.get("receptor");
+        String docid = (String) media.get("docid");
 
         GeoDocument doc = this.receptor.getDocument(category, receptor, docid);
         if (doc == null) {
