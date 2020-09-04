@@ -6,7 +6,7 @@ public class ChannelDocument {
     String id;
     String creator;
     String channel;
-    double wy;
+    String purchaseSn;
     long ctime;
     String content;
 
@@ -44,12 +44,12 @@ public class ChannelDocument {
         this.channel = channel;
     }
 
-    public double getWy() {
-        return wy;
+    public String getPurchaseSn() {
+        return purchaseSn;
     }
 
-    public void setWy(double wy) {
-        this.wy = wy;
+    public void setPurchaseSn(String purchaseSn) {
+        this.purchaseSn = purchaseSn;
     }
 
     public long getCtime() {

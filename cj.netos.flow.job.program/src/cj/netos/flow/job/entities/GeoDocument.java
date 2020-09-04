@@ -11,8 +11,9 @@ public class GeoDocument {
 
     public static GeoDocument parse(Map<String, Object> tuple) {
         String json = new Gson().toJson(tuple);
-        return new Gson().fromJson(json,GeoDocument.class);
+        return new Gson().fromJson(json, GeoDocument.class);
     }
+
     String id;
     String upstreamPerson;
     //如果是从网流来的消息
@@ -27,7 +28,7 @@ public class GeoDocument {
     long dtime;
     String state;
     String text;
-    double wy;
+    String purchaseSn;
     ///location是GEOPoi对象
     LatLng location;
 
@@ -135,12 +136,12 @@ public class GeoDocument {
         this.text = text;
     }
 
-    public double getWy() {
-        return wy;
+    public String getPurchaseSn() {
+        return purchaseSn;
     }
 
-    public void setWy(double wy) {
-        this.wy = wy;
+    public void setPurchaseSn(String purchaseSn) {
+        this.purchaseSn = purchaseSn;
     }
 
     public LatLng getLocation() {
@@ -152,6 +153,6 @@ public class GeoDocument {
     }
 
     public void setMedias(List<GeoDocumentMedia> medias) {
-        this.medias=medias;
+        this.medias = medias;
     }
 }
