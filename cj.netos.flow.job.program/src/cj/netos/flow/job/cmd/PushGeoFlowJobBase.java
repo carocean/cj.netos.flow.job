@@ -25,7 +25,7 @@ public abstract class PushGeoFlowJobBase extends DefaultBroadcast implements ICo
         }
     }
 
-    protected Map<String, List<String>> getDestinations(String category, String receptor, String creator) {
+    protected Map<String, List<String>> getDestinations(String receptor, String creator) {
         Map<String, List<String>> destinations = new HashMap<>();
         List<String> keypair = new ArrayList<>();
         //消息创建者发消息创建者的目标注释掉
@@ -35,7 +35,7 @@ public abstract class PushGeoFlowJobBase extends DefaultBroadcast implements ICo
         long limit = 100;
         long skip = 0;
         while (true) {
-            Map<String, List<String>> personReceptors = this.receptor.searchAroundReceptors(category, receptor, null, limit, skip);
+            Map<String, List<String>> personReceptors = this.receptor.searchAroundReceptors(receptor, null, limit, skip);
             if (personReceptors.isEmpty()) {
                 break;
             }
@@ -59,7 +59,7 @@ public abstract class PushGeoFlowJobBase extends DefaultBroadcast implements ICo
         }
         skip = 0;
         while (true) {
-            List<String> personReceptors = this.receptor.pageReceptorFans(category, receptor, limit, skip);
+            List<String> personReceptors = this.receptor.pageReceptorFans( receptor, limit, skip);
             if (personReceptors.isEmpty()) {
                 break;
             }
@@ -71,7 +71,7 @@ public abstract class PushGeoFlowJobBase extends DefaultBroadcast implements ICo
                     keypair = new ArrayList<>();
                     destinations.put(person, keypair);
                 }
-                String id = String.format("%s/%s", category, receptor);
+                String id = String.format("%s",  receptor);
                 if (keypair.contains(id)) {
                     continue;
                 }

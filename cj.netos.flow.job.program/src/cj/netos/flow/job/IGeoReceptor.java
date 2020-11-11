@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface IGeoReceptor {
-    GeoDocument getDocument(String category, String receptor, String docid);
-    Map<String, List<String>> searchAroundReceptors(String category, String receptor, String geoType, long limit, long skip);
-    List<String> pageReceptorFans( String category, String receptor, long limit, long skip);
+    GeoDocument getDocument(String docid);
+    Map<String, List<String>> searchAroundReceptors( String receptor, String geoType, long limit, long skip);
+    List<String> pageReceptorFans(  String receptor, long limit, long skip);
 }

@@ -28,13 +28,11 @@ public class PushGeoDocumentMediaCommand extends PushGeoFlowJobBase {
         Map<String, Object> headers = properties.getHeaders();
         String mediacreator = ((LongString) headers.get("creator")).toString();
         Map<String, Object> media = new Gson().fromJson(new String(body), HashMap.class);
-        String category = (String) media.get("category");
-        String receptor = (String) media.get("receptor");
         String docid = (String) media.get("docid");
 
-        GeoDocument doc = this.receptor.getDocument(category, receptor, docid);
+        GeoDocument doc = this.receptor.getDocument(docid);
         if (doc == null) {
-            CJSystem.logging().warn(getClass(), String.format("文档不存在:%s/%s", receptor, docid));
+            CJSystem.logging().warn(getClass(), String.format("文档不存在:%s", docid));
             return;
         }
         ByteBuf bb = Unpooled.buffer();
@@ -42,12 +40,10 @@ public class PushGeoDocumentMediaCommand extends PushGeoFlowJobBase {
         JPushFrame frame = new JPushFrame("mediaDocument /geosphere/receptor gbera/1.0", bb);
         String creator = doc.getCreator();
         frame.parameter("docid", docid);
-        frame.parameter("category", category);
-        frame.parameter("receptor", receptor);
         frame.parameter("creator", creator);
         frame.head("sender-person", mediacreator);
 
-        Map<String, List<String>> destinations = getDestinations(category, receptor, creator);
+        Map<String, List<String>> destinations = getDestinations( doc.getReceptor(), creator);
 //        CJSystem.logging().warn(getClass(), String.format("推送目标:%s", new Gson().toJson(destinations)));
         try {
             broadcast(destinations, frame);

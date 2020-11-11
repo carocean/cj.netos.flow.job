@@ -26,16 +26,14 @@ public class PushGeoDocumentCommentCommand extends PushGeoFlowJobBase {
     @Override
     public void command(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws RabbitMQException, RetryCommandException, IOException {
         Map<String, Object> headers = properties.getHeaders();
-        String category = ((LongString) headers.get("category")).toString();
-        String receptor = ((LongString) headers.get("receptor")).toString();
         String docid = ((LongString) headers.get("docid")).toString();
         String commenter = ((LongString) headers.get("commenter")).toString();
         String commentid = ((LongString) headers.get("commentid")).toString();
         String comments = new String(body);
 
-        GeoDocument doc = this.receptor.getDocument(category, receptor, docid);
+        GeoDocument doc = this.receptor.getDocument(docid);
         if (doc == null) {
-            CJSystem.logging().warn(getClass(), String.format("文档不存在:%s/%s", receptor, docid));
+            CJSystem.logging().warn(getClass(), String.format("文档不存在:%s",  docid));
             return;
         }
         ByteBuf bb = Unpooled.buffer();
@@ -47,13 +45,11 @@ public class PushGeoDocumentCommentCommand extends PushGeoFlowJobBase {
         JPushFrame frame = new JPushFrame("commentDocument /geosphere/receptor gbera/1.0", bb);
         String creator = doc.getCreator();
         frame.parameter("docid", docid);
-        frame.parameter("category", category);
-        frame.parameter("receptor", receptor);
         frame.parameter("creator", creator);
         frame.parameter("commentid", commentid);
         frame.head("sender-person", commenter);
 
-        Map<String, List<String>> destinations = getDestinations(category, receptor, creator);
+        Map<String, List<String>> destinations = getDestinations(doc.getReceptor(), creator);
 //        CJSystem.logging().warn(getClass(), String.format("推送目标:%s", new Gson().toJson(destinations)));
         try {
             broadcast(destinations, frame);

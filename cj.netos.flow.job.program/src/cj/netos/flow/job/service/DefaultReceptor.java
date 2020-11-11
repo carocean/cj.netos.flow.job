@@ -20,40 +20,38 @@ public class DefaultReceptor implements IGeoReceptor {
     @CjServiceRef(refByName = "mongodb.netos.home")
     ICube home;
 
-    String _getReceptorColName(String category) {
-        return String.format("geo.receptor.%s", category);
+    String _getReceptorColName() {
+        return String.format("geo.receptors");
     }
 
-    String _getDocumentColName(String category) {
-        return String.format("geo.receptor.%s.docs", category);
+    String _getDocumentColName() {
+        return String.format("geo.receptor.docs");
     }
 
-    String _getMediaColName(String category) {
-        return String.format("geo.receptor.%s.medias", category);
+    String _getMediaColName() {
+        return String.format("geo.receptor.medias");
     }
 
-    String _getFollowColName(String category) {
-        return String.format("geo.receptor.%s.follows", category);
+    String _getFollowColName() {
+        return String.format("geo.receptor.follows");
     }
 
     @Override
-    public GeoDocument getDocument(String category, String receptor, String docid) {
-        String cjql = String.format("select {'tuple':'*'}.limit(1) from tuple ?(colname) ?(clazz) where {'tuple.receptor':'?(receptor)','tuple.id':'?(docid)'}");
+    public GeoDocument getDocument( String docid) {
+        String cjql = String.format("select {'tuple':'*'}.limit(1) from tuple ?(colname) ?(clazz) where {'tuple.id':'?(docid)'}");
         IQuery<GeoDocument> query = home.createQuery(cjql);
-        query.setParameter("colname", _getDocumentColName(category));
+        query.setParameter("colname", _getDocumentColName());
         query.setParameter("clazz", GeoDocument.class.getName());
-        query.setParameter("receptor", receptor);
         query.setParameter("docid", docid);
         IDocument<GeoDocument> doc = query.getSingleResult();
         if (doc == null) {
             return null;
         }
-        cjql = String.format("select {'tuple':'*'}.limit(1) from tuple ?(colname) ?(clazz) where {'tuple.docid':'?(docid)','tuple.receptor':'?(receptor)'}");
+        cjql = String.format("select {'tuple':'*'}.limit(1) from tuple ?(colname) ?(clazz) where {'tuple.docid':'?(docid)'}");
         IQuery<GeoDocumentMedia> query2 = home.createQuery(cjql);
-        query2.setParameter("colname", _getMediaColName(category));
+        query2.setParameter("colname", _getMediaColName());
         query2.setParameter("clazz", GeoDocumentMedia.class.getName());
         query2.setParameter("docid", docid);
-        query2.setParameter("receptor", receptor);
         List<IDocument<GeoDocumentMedia>> medias = query2.getResultList();
         List<GeoDocumentMedia> _medias = new ArrayList<>();
         for (IDocument<GeoDocumentMedia> media : medias) {
@@ -64,10 +62,10 @@ public class DefaultReceptor implements IGeoReceptor {
         return geoDocument;
     }
 
-    public GeoReceptor getReceptor(String category, String receptor) {
+    public GeoReceptor getReceptor( String receptor) {
         String cjql = "select {'tuple':'*'} from tuple ?(colname) ?(clazz) where {'tuple.id':'?(receptor)'}";
         IQuery<GeoReceptor> query = home.createQuery(cjql);
-        query.setParameter("colname", _getReceptorColName(category));
+        query.setParameter("colname", _getReceptorColName());
         query.setParameter("clazz", GeoReceptor.class.getName());
         query.setParameter("receptor", receptor);
         IDocument<GeoReceptor> doc = query.getSingleResult();
@@ -113,24 +111,24 @@ public class DefaultReceptor implements IGeoReceptor {
     }
 
     @Override
-    public Map<String, List<String>> searchAroundReceptors(String category, String receptor, String geoType, long limit, long skip) {
+    public Map<String, List<String>> searchAroundReceptors( String receptor, String geoType, long limit, long skip) {
         List<GeoCategory> categories = null;
         if (StringUtil.isEmpty(geoType)) {
             categories = listCategory();
         } else {
             categories = findCategories(geoType);
         }
-        GeoReceptor geoReceptor = getReceptor(category, receptor);
+        GeoReceptor geoReceptor = getReceptor(receptor);
         LatLng latLng = geoReceptor.getLocation();
         double radius = geoReceptor.getRadius();
         Map<String, List<String>> receptorsOfCreatorMap = new HashMap<>();
         for (GeoCategory cate : categories) {
-            _searchPoiInCategory(latLng, radius, cate, limit, skip, receptorsOfCreatorMap);
+            _searchPoiInCategory(latLng, radius, limit, skip, receptorsOfCreatorMap);
         }
         return receptorsOfCreatorMap;
     }
 
-    private void _searchPoiInCategory(LatLng location, double radius, GeoCategory category, long limit, long skip, Map<String, List<String>> receptorsOfCreatorMap) {
+    private void _searchPoiInCategory(LatLng location, double radius,long limit, long skip, Map<String, List<String>> receptorsOfCreatorMap) {
         //distanceField:"distance" 距离字段别称
         //"distanceMultiplier": 0.001,
         //{ $limit : 5 }
@@ -144,28 +142,28 @@ public class DefaultReceptor implements IGeoReceptor {
                 "}", location.toCoordinate(), radius);
         String limitjson = String.format("{'$limit':%s}", limit);
         String skipjson = String.format("{'$skip':%s}", skip);
-        AggregateIterable<Document> it = home.aggregate(_getReceptorColName(category.getId()), Arrays.asList(Document.parse(json), Document.parse(limitjson), Document.parse(skipjson)));
+        AggregateIterable<Document> it = home.aggregate(_getReceptorColName(), Arrays.asList(Document.parse(json), Document.parse(limitjson), Document.parse(skipjson)));
         for (Document doc : it) {
             Map<String, Object> tuple = (Map<String, Object>) doc.get("tuple");
             String creator = (String) tuple.get("creator");
             String id = (String) tuple.get("id");
-            String cate=(String)tuple.get("category");
+//            String cate=(String)tuple.get("category");
             List<String> receptors = receptorsOfCreatorMap.get(creator);
             if (receptors == null) {
                 receptors = new ArrayList<>();
                 receptorsOfCreatorMap.put(creator, receptors);
             }
-            receptors.add(String.format("%s/%s",cate,id));
+            receptors.add(id);
         }
     }
 
     @Override
-    public List<String> pageReceptorFans(String category, String receptor, long limit, long skip) {
-        GeoReceptor geoReceptor = getReceptor(category, receptor);
+    public List<String> pageReceptorFans(String receptor, long limit, long skip) {
+        GeoReceptor geoReceptor = getReceptor(receptor);
 
         String cjql = "select {'tuple':'*'}.limit(?(limit)).skip(?(skip)) from tuple ?(colname) ?(clazz) where {'tuple.category':'?(category)','tuple.receptor':'?(receptor)'}";
         IQuery<GeoFollow> query = home.createQuery(cjql);
-        query.setParameter("colname", _getFollowColName(geoReceptor.getCategory()));
+        query.setParameter("colname", _getFollowColName());
         query.setParameter("clazz", GeoFollow.class.getName());
         query.setParameter("category", geoReceptor.getCategory());
         query.setParameter("receptor", geoReceptor.getId());
@@ -195,7 +193,7 @@ public class DefaultReceptor implements IGeoReceptor {
                 "}" +
                 "}", latLng.toCoordinate(), radius);
         String match = String.format("{'$match':{'tuple.creator':{'$in':%s}}}", new Gson().toJson(ids));
-        AggregateIterable<Document> it = home.aggregate(_getReceptorColName(geoReceptor.getCategory()), Arrays.asList(Document.parse(json), Document.parse(match)));
+        AggregateIterable<Document> it = home.aggregate(_getReceptorColName(), Arrays.asList(Document.parse(json), Document.parse(match)));
         ids.clear();
         for (Document doc : it) {
             Map<String, Object> tuple = (Map<String, Object>) doc.get("tuple");
