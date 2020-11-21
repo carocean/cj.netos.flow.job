@@ -44,7 +44,10 @@ public class PushChatMessage extends DefaultBroadcast implements IConsumerComman
             CJSystem.logging().warn(getClass(), String.format("聊天室不存在:%s/%s", roomcreator, room));
             return;
         }
-
+        if (chatroom.getFlag()==1) {
+            CJSystem.logging().warn(getClass(), String.format("聊天室已删除:%s/%s", roomcreator, room));
+            return;
+        }
         ByteBuf bb = Unpooled.buffer();
         bb.writeBytes(content.getBytes());
         JPushFrame frame = new JPushFrame("pushMessage /chat/room/message gbera/1.0", bb);

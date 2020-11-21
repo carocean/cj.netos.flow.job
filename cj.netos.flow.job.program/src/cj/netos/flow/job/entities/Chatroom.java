@@ -6,7 +6,17 @@ public class Chatroom {
     String creator;
     String leading;
     String microsite;
+    int flag;//0为正常；1为已删除
     long ctime;
+
+    public int getFlag() {
+        return flag;
+    }
+
+    public void setFlag(int flag) {
+        this.flag = flag;
+    }
+
     public String getMicrosite() {
         return microsite;
     }

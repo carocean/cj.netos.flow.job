@@ -31,7 +31,7 @@ public class DefaultChatroom extends AbstractService implements IChatroom {
     @Override
     public List<String> pageMember(String msgcreator, String room, long limit, long skip) {
         ICube cube = cube(msgcreator);
-        String cjql = String.format("select {'tuple.person':1}.limit(%s).skip(%s) from tuple chat.members %s where {'tuple.room':'%s'}  ", limit, skip, HashMap.class.getName(), room);
+        String cjql = String.format("select {'tuple.person':1}.limit(%s).skip(%s) from tuple chat.members %s where {'tuple.room':'%s','tuple.flag':{'$ne':1}}  ", limit, skip, HashMap.class.getName(), room);
         IQuery<Map<String, String>> query = cube.createQuery(cjql);
         List<IDocument<Map<String, String>>> docs = query.getResultList();
         List<String> members = new ArrayList<>();
