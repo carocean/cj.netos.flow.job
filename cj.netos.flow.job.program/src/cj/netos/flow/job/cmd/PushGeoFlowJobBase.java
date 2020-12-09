@@ -26,8 +26,7 @@ public abstract class PushGeoFlowJobBase extends DefaultBroadcast implements ICo
     }
 
     protected Map<String, List<String>> getDestinations(String receptor, String creator) {
-        Map<String, List<String>> destinations = new HashMap<>();
-        List<String> keypair = new ArrayList<>();
+        Map<String, List<String>> destinations = new HashMap<>();//key是person
         //消息创建者发消息创建者的目标注释掉
 //        keypair.add(String.format("%s/%s", category, receptor));
 //        destinations.put(creator, keypair);
@@ -35,7 +34,27 @@ public abstract class PushGeoFlowJobBase extends DefaultBroadcast implements ICo
         long limit = 100;
         long skip = 0;
         while (true) {
-            Map<String, List<String>> personReceptors = this.receptor.searchAroundReceptors(receptor, null, limit, skip);
+            List<String> followers = this.receptor.pageReceptorFans( receptor, limit, skip);
+            if (followers.isEmpty()) {
+                break;
+            }
+            CJSystem.logging().warn(getClass(), String.format("粉丝数:%s", followers.size()));
+            skip += followers.size();
+            for (String person : followers) {
+                List<String>  keypair = destinations.get(person);
+                if (keypair == null) {
+                    keypair = new ArrayList<>();
+                    destinations.put(person, keypair);
+                }
+                if (keypair.contains(receptor)) {
+                    continue;
+                }
+                keypair.add(receptor);
+            }
+        }
+        skip = 0;
+        while (true) {
+            Map<String, List<String>> personReceptors = this.receptor.searchAroundReceptors(receptor, "mobiles", limit, skip);
             if (personReceptors.isEmpty()) {
                 break;
             }
@@ -43,7 +62,10 @@ public abstract class PushGeoFlowJobBase extends DefaultBroadcast implements ICo
             skip += personReceptors.size();
             Set<String> creators = personReceptors.keySet();
             for (String person : creators) {
-                keypair = destinations.get(person);
+                if (destinations.containsKey(person)) {//如果粉丝感知器已有则排除再向其行人感知器推送
+                    continue;
+                }
+                List<String>  keypair = destinations.get(person);
                 if (keypair == null) {
                     keypair = new ArrayList<>();
                     destinations.put(person, keypair);
@@ -57,27 +79,7 @@ public abstract class PushGeoFlowJobBase extends DefaultBroadcast implements ICo
                 }
             }
         }
-        skip = 0;
-        while (true) {
-            List<String> personReceptors = this.receptor.pageReceptorFans( receptor, limit, skip);
-            if (personReceptors.isEmpty()) {
-                break;
-            }
-            CJSystem.logging().warn(getClass(), String.format("粉丝数:%s", personReceptors.size()));
-            skip += personReceptors.size();
-            for (String person : personReceptors) {
-                keypair = destinations.get(person);
-                if (keypair == null) {
-                    keypair = new ArrayList<>();
-                    destinations.put(person, keypair);
-                }
-                String id = String.format("%s",  receptor);
-                if (keypair.contains(id)) {
-                    continue;
-                }
-                keypair.add(id);
-            }
-        }
+
         return destinations;
     }
 }
