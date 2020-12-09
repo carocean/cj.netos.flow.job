@@ -41,7 +41,7 @@ public class PushGeoDocumentCommand extends PushGeoFlowJobBase {
         frame.parameter("creator", creator);
         frame.head("sender-person", sender);
 
-        Map<String, List<String>> destinations = getDestinations(doc.getReceptor(), creator);
+        Map<String, List<String>> destinations = getDestinations(doc.getReceptor(), null/*不推给创建者本人*/);
 //        CJSystem.logging().warn(getClass(), String.format("推送目标:%s", new Gson().toJson(destinations)));
         try {
             broadcast(destinations, frame);

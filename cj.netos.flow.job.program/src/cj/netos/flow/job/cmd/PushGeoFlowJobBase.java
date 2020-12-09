@@ -8,6 +8,7 @@ import cj.studio.ecm.CJSystem;
 import cj.studio.ecm.annotation.CjServiceRef;
 import cj.studio.ecm.net.CircuitException;
 import cj.ultimate.gson2.com.google.gson.Gson;
+import cj.ultimate.util.StringUtil;
 
 import java.util.*;
 
@@ -28,8 +29,9 @@ public abstract class PushGeoFlowJobBase extends DefaultBroadcast implements ICo
     protected Map<String, List<String>> getDestinations(String receptor, String creator) {
         Map<String, List<String>> destinations = new HashMap<>();//key是person
         //消息创建者发消息创建者的目标注释掉
-//        keypair.add(String.format("%s/%s", category, receptor));
-//        destinations.put(creator, keypair);
+        if (!StringUtil.isEmpty(creator)) {
+            destinations.put(creator, Arrays.asList(receptor));
+        }
 
         long limit = 100;
         long skip = 0;
