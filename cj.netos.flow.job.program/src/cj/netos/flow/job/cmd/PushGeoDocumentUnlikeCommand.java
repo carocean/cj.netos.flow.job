@@ -1,5 +1,6 @@
 package cj.netos.flow.job.cmd;
 
+import cj.netos.flow.job.GeoPushType;
 import cj.netos.flow.job.entities.GeoDocument;
 import cj.netos.jpush.JPushFrame;
 import cj.netos.rabbitmq.CjConsumer;
@@ -28,7 +29,7 @@ public class PushGeoDocumentUnlikeCommand extends PushGeoFlowJobBase {
         String docid = ((LongString) headers.get("docid")).toString();
         String unliker = ((LongString) headers.get("unliker")).toString();
 
-        GeoDocument doc = this.receptor.getDocument(  docid);
+        GeoDocument doc = this.receptor.getDocument(docid);
         if (doc == null) {
             CJSystem.logging().warn(getClass(), String.format("文档不存在:%s", docid));
             return;
@@ -41,7 +42,7 @@ public class PushGeoDocumentUnlikeCommand extends PushGeoFlowJobBase {
         frame.parameter("creator", creator);
         frame.head("sender-person", unliker);
 
-        Map<String, List<String>> destinations = getDestinations(doc.getReceptor(), creator);
+        Map<String, List<String>> destinations = getDestinations(doc.getReceptor(), GeoPushType.pushUnlike, creator);
 //        CJSystem.logging().warn(getClass(), String.format("推送目标:%s", new Gson().toJson(destinations)));
         try {
             broadcast(destinations, frame);

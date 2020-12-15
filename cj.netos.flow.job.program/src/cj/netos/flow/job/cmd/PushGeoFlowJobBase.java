@@ -1,7 +1,9 @@
 package cj.netos.flow.job.cmd;
 
 import cj.netos.flow.job.DefaultBroadcast;
+import cj.netos.flow.job.GeoPushType;
 import cj.netos.flow.job.IGeoReceptor;
+import cj.netos.flow.job.entities.GeoReceptor;
 import cj.netos.jpush.JPushFrame;
 import cj.netos.rabbitmq.consumer.IConsumerCommand;
 import cj.studio.ecm.CJSystem;
@@ -26,12 +28,31 @@ public abstract class PushGeoFlowJobBase extends DefaultBroadcast implements ICo
         }
     }
 
-    protected Map<String, List<String>> getDestinations(String receptor, String creator) {
+    protected Map<String, List<String>> getDestinations(String receptor, GeoPushType type,String docCreator) {
+
         Map<String, List<String>> destinations = new HashMap<>();//key是person
-        //消息创建者发消息创建者的目标注释掉
-        if (!StringUtil.isEmpty(creator)) {
-            destinations.put(creator, Arrays.asList(receptor));
+
+        //只要不是推送文档指令，其它的该文档的推送类型都要推送给文档创建者本人
+        if (type!=GeoPushType.pushDoc) {
+            destinations.put(docCreator, Arrays.asList(receptor));
         }
+
+        GeoReceptor geoReceptor=this.receptor.getReceptor(receptor);
+        if (geoReceptor != null) {
+            String  receptorCreator=geoReceptor.getCreator();
+            //如果文档创建者本人不是感知器创建者，说明是在粉丝感知器中产生的事件，则需要推送给感知器创建者
+            if (!receptorCreator.equals(docCreator)) {
+                List<String>  keypair = destinations.get(receptorCreator);
+                if (keypair == null) {
+                    keypair = new ArrayList<>();
+                    destinations.put(receptorCreator, keypair);
+                }
+                if (!keypair.contains(receptor)) {
+                    keypair.add(receptor);
+                }
+            }
+        }
+
 
         long limit = 100;
         long skip = 0;

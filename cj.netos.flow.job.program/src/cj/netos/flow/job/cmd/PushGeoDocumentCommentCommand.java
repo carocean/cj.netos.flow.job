@@ -1,5 +1,6 @@
 package cj.netos.flow.job.cmd;
 
+import cj.netos.flow.job.GeoPushType;
 import cj.netos.flow.job.entities.GeoDocument;
 import cj.netos.jpush.JPushFrame;
 import cj.netos.rabbitmq.CjConsumer;
@@ -49,7 +50,7 @@ public class PushGeoDocumentCommentCommand extends PushGeoFlowJobBase {
         frame.parameter("commentid", commentid);
         frame.head("sender-person", commenter);
 
-        Map<String, List<String>> destinations = getDestinations(doc.getReceptor(), creator);
+        Map<String, List<String>> destinations = getDestinations(doc.getReceptor(),  GeoPushType.pushComment,creator);
 //        CJSystem.logging().warn(getClass(), String.format("推送目标:%s", new Gson().toJson(destinations)));
         try {
             broadcast(destinations, frame);

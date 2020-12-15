@@ -61,7 +61,7 @@ public class DefaultReceptor implements IGeoReceptor {
         geoDocument.setMedias(_medias);
         return geoDocument;
     }
-
+    @Override
     public GeoReceptor getReceptor( String receptor) {
         String cjql = "select {'tuple':'*'} from tuple ?(colname) ?(clazz) where {'tuple.id':'?(receptor)'}";
         IQuery<GeoReceptor> query = home.createQuery(cjql);

@@ -1,5 +1,6 @@
 package cj.netos.flow.job.cmd;
 
+import cj.netos.flow.job.GeoPushType;
 import cj.netos.flow.job.entities.GeoDocument;
 import cj.netos.jpush.JPushFrame;
 import cj.netos.rabbitmq.CjConsumer;
@@ -33,6 +34,7 @@ public class PushGeoDocumentCommand extends PushGeoFlowJobBase {
             CJSystem.logging().warn(getClass(), String.format("文档不存在:%s", docid));
             return;
         }
+
         ByteBuf bb = Unpooled.buffer();
         bb.writeBytes(new Gson().toJson(doc).getBytes());
         JPushFrame frame = new JPushFrame("pushDocument /geosphere/receptor gbera/1.0", bb);
@@ -41,7 +43,7 @@ public class PushGeoDocumentCommand extends PushGeoFlowJobBase {
         frame.parameter("creator", creator);
         frame.head("sender-person", sender);
 
-        Map<String, List<String>> destinations = getDestinations(doc.getReceptor(), null/*不推给创建者本人*/);
+        Map<String, List<String>> destinations = getDestinations(doc.getReceptor(), GeoPushType.pushDoc,creator);
 //        CJSystem.logging().warn(getClass(), String.format("推送目标:%s", new Gson().toJson(destinations)));
         try {
             broadcast(destinations, frame);
