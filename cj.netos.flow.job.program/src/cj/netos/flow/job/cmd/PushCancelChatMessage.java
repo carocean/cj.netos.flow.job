@@ -34,7 +34,6 @@ public class PushCancelChatMessage extends DefaultBroadcast implements IConsumer
         Map<String, Object> headers = properties.getHeaders();
         String room = ((LongString) headers.get("room")).toString();
         String msgid = ((LongString) headers.get("msgid")).toString();
-        String contentType = ((LongString) headers.get("contentType")).toString();
         String roomcreator = ((LongString) headers.get("creator")).toString();
         String sender = ((LongString) headers.get("sender")).toString();
 
@@ -50,7 +49,6 @@ public class PushCancelChatMessage extends DefaultBroadcast implements IConsumer
         JPushFrame frame = new JPushFrame("cancelMessage /chat/room/message gbera/1.0");
         frame.parameter("room", room);
         frame.parameter("roomCreator", roomcreator);
-        frame.parameter("contentType", contentType);
         frame.parameter("msgid", msgid);
         frame.parameter("ctime", System.currentTimeMillis() + "");
         frame.head("sender-person", sender);
